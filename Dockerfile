@@ -2,22 +2,34 @@ FROM ubuntu:22.04
 
 ARG TELEGRAM_API_ID
 ARG TELEGRAM_API_HASH
-
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get -y upgrade
-RUN apt-get install -y make git zlib1g-dev libssl-dev gperf cmake clang libc++-dev libc++abi-dev
-RUN echo "Asia/Tehran" > /etc/timezone
+# Base system setup
+RUN ln -fs /usr/share/zoneinfo/Asia/Tehran /etc/localtime && \
+    apt-get update && apt-get -y upgrade && \
+    apt-get install -y make git zlib1g-dev libssl-dev gperf cmake
 
-RUN git clone --recursive https://github.com/tdlib/telegram-bot-api.git
+# Install clang-15 and libc++-15
+RUN apt-get install -y clang-15 libc++-15-dev libc++abi-15-dev
+
+# Timezone info
+RUN echo "Asia/Tehran" > /etc/timezone && \
+    ln -sf /usr/share/zoneinfo/Asia/Tehran /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata
+
+# Clone and build telegram-bot-api
+RUN git clone --recursive https://github.com/tdlib/telegram-bot-api.git /telegram-bot-api
 WORKDIR /telegram-bot-api
 RUN rm -rf build && mkdir build
-
 WORKDIR /telegram-bot-api/build
 
-RUN CXXFLAGS="-stdlib=libc++" CC=/usr/bin/clang CXX=/usr/bin/clang cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=/usr/local ..
+# Compile using clang-15 with libc++
+RUN CC=clang-15 CXX=clang++-15 CXXFLAGS="-stdlib=libc++" cmake \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr/local ..
 RUN cmake --build . --target install
 
 WORKDIR /var/lib/telegram-bot-api
 
-ENTRYPOINT telegram-bot-api --api-id=${TELEGRAM_API_ID} --api-hash=${TELEGRAM_API_HASH} --local
+# JSON-array ENTRYPOINT handles signals correctly
+ENTRYPOINT ["telegram-bot-api","--api-id=${TELEGRAM_API_ID}","--api-hash=${TELEGRAM_API_HASH}","--local"]
