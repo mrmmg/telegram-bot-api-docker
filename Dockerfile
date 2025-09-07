@@ -4,18 +4,12 @@ ARG TELEGRAM_API_ID
 ARG TELEGRAM_API_HASH
 ARG DEBIAN_FRONTEND=noninteractive
 
+ARG DEBIAN_FRONTEND=noninteractive
+
 # Base system setup
-RUN ln -fs /usr/share/zoneinfo/Asia/Tehran /etc/localtime && \
-    apt-get update && apt-get -y upgrade && \
-    apt-get install -y make git zlib1g-dev libssl-dev gperf cmake
-
-# Install clang-15 and libc++-15
-RUN apt-get install -y clang-15 libc++-15-dev libc++abi-15-dev
-
-# Timezone info
-RUN echo "Asia/Tehran" > /etc/timezone && \
-    ln -sf /usr/share/zoneinfo/Asia/Tehran /etc/localtime && \
-    dpkg-reconfigure -f noninteractive tzdata
+RUN apt-get update && apt-get -y upgrade && \
+    apt-get install -y make git zlib1g-dev libssl-dev gperf cmake && \
+    apt-get install -y clang-15 libc++-15-dev libc++abi-15-dev
 
 # Clone and build telegram-bot-api
 RUN git clone --recursive https://github.com/tdlib/telegram-bot-api.git /telegram-bot-api
