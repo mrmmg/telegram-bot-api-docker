@@ -1,0 +1,13 @@
+services:
+  telegram:
+    build: .
+    image: telegram-bot-api
+    ports:
+      - "${SERVICE_HOST_PORT:-8081}:8081"
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - telegram-bot-api-data:/var/lib/telegram-bot-api
+
+volumes:
+  telegram-bot-api-data:
