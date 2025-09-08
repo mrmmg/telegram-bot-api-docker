@@ -48,4 +48,4 @@ COPY --from=builder /usr/local/bin/telegram-bot-api /usr/local/bin/telegram-bot-
 WORKDIR /var/lib/telegram-bot-api
 
 # JSON-array ENTRYPOINT handles signals correctly
-ENTRYPOINT ["telegram-bot-api","--api-id=${TELEGRAM_API_ID}","--api-hash=${TELEGRAM_API_HASH}","--local"]
+ENTRYPOINT telegram-bot-api --api-id=${TELEGRAM_API_ID} --api-hash=${TELEGRAM_API_HASH} --local
